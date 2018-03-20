@@ -1,23 +1,70 @@
 package libs
 
 import (
+	"bufio"
 	"bytes"
-	"golang.org/x/crypto/ssh"
 	"errors"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
+
+	"golang.org/x/crypto/ssh"
 )
 
 type Ssh struct {
-	User     string
-	Password string
-	Addr     string
+	AutoLogin  string
+	PrivateKey string
+	User       string
+	Password   string
+	Addr       string
+	Port       string
 }
 
-func (s *Ssh) Cmd(cmd string) (res string,err error) {
-	passWord := []ssh.AuthMethod{ssh.Password(s.Password)}
-	conf := &ssh.ClientConfig{User: s.User, Auth: passWord, HostKeyCallback: ssh.InsecureIgnoreHostKey(), Timeout: 20 * time.Minute}
-	client, err := ssh.Dial("tcp", s.Addr, conf)
+func (s *Ssh) Cmd(cmd string) (res string, err error) {
+	var (
+		config *ssh.ClientConfig
+	)
+
+	if s.AutoLogin == "yes" {
+		var hostKey ssh.PublicKey
+		key, err := ioutil.ReadFile(s.PrivateKey)
+		if err != nil {
+			return res, err
+		}
+
+		signer, err := ssh.ParsePrivateKey(key)
+		if err != nil {
+			return res, err
+		}
+
+		hostKey, err = s.getHostKey()
+		if err != nil {
+			return res, err
+		}
+
+		config = &ssh.ClientConfig{
+			User: s.User,
+			Auth: []ssh.AuthMethod{
+				ssh.PublicKeys(signer),
+			},
+			HostKeyCallback: ssh.FixedHostKey(hostKey),
+			Timeout:         10 * time.Minute,
+		}
+	} else {
+		passWord := []ssh.AuthMethod{ssh.Password(s.Password)}
+		config = &ssh.ClientConfig{
+			User:            s.User,
+			Auth:            passWord,
+			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+			Timeout:         10 * time.Minute,
+		}
+	}
+
+	addr := s.Addr + ":" + s.Port
+	client, err := ssh.Dial("tcp", addr, config)
 	if err != nil {
 		return res, err
 	}
@@ -43,8 +90,46 @@ func (s *Ssh) Cmd(cmd string) (res string,err error) {
 	return res, nil
 }
 
-func NewSsh(user, password, addr string) *Ssh {
-	return &Ssh{User: user, Password: password, Addr: addr}
+func (s *Ssh) getHostKey() (ssh.PublicKey, error) {
+	file, err := os.Open(filepath.Join(os.Getenv("HOME"), ".ssh", "known_hosts"))
+	// file, err := os.Open("/root/.ssh/known_hosts")
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	var hostKey ssh.PublicKey
+	for scanner.Scan() {
+		fields := strings.Split(scanner.Text(), " ")
+		if len(fields) != 3 {
+			continue
+		}
+		if strings.Contains(fields[0], s.Addr) {
+			var err error
+			hostKey, _, _, _, err = ssh.ParseAuthorizedKey(scanner.Bytes())
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("error parsing %q: %v", fields[2], err))
+			}
+			break
+		}
+	}
+
+	if hostKey == nil {
+		return nil, errors.New(fmt.Sprintf("no hostkey for %s", s.Addr))
+	}
+	return hostKey, nil
+}
+
+func NewSsh(autoLogin, privateKey, user, password, addr, port string) *Ssh {
+	return &Ssh{
+		AutoLogin:  autoLogin,
+		PrivateKey: privateKey,
+		User:       user,
+		Password:   password,
+		Addr:       addr,
+		Port:       port,
+	}
 }
 
 // 去除字符串中的cutset
