@@ -23,8 +23,8 @@ type Mail struct {
 
 func NewMail(fromName, fromAddr, toName, toAddr, serverName, password, subject string) *Mail {
 	headers := make(map[string]string)
-	froms := mail.Address{fromName, fromAddr}
-	tos := mail.Address{toName, toAddr}
+	froms := mail.Address{Name: fromName, Address: fromAddr}
+	tos := mail.Address{Name: toName, Address: toAddr}
 	headers["From"] = froms.String()
 	headers["To"] = tos.String()
 	headers["Subject"] = subject
