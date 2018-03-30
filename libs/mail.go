@@ -23,10 +23,10 @@ type Mail struct {
 
 func NewMail(fromName, fromAddr, toName, toAddr, serverName, password, subject string) *Mail {
 	headers := make(map[string]string)
-	from := mail.Address{fromName, fromAddr}
-	to := mail.Address{toName, toAddr}
-	headers["From"] = from.String()
-	headers["To"] = to.String()
+	froms := mail.Address{fromName, fromAddr}
+	tos := mail.Address{toName, toAddr}
+	headers["From"] = froms.String()
+	headers["To"] = tos.String()
 	headers["Subject"] = subject
 	headers["Content-Type"] = "text/html; charset=UTF-8"
 	messages := ""
@@ -35,8 +35,8 @@ func NewMail(fromName, fromAddr, toName, toAddr, serverName, password, subject s
 	}
 
 	return &Mail{
-		From:       from,
-		To:         to,
+		From:       froms,
+		To:         tos,
 		FromName:   fromName,
 		FromAddr:   fromAddr,
 		ToName:     toName,

@@ -15,7 +15,6 @@ import (
 )
 
 type Ssh struct {
-	AutoLogin  string
 	PrivateKey string
 	User       string
 	Password   string
@@ -23,12 +22,22 @@ type Ssh struct {
 	Port       string
 }
 
+func NewSsh(privateKey, user, password, addr, port string) *Ssh {
+	return &Ssh{
+		PrivateKey: privateKey,
+		User:       user,
+		Password:   password,
+		Addr:       addr,
+		Port:       port,
+	}
+}
+
 func (s *Ssh) Cmd(cmd string) (res string, err error) {
 	var (
 		config *ssh.ClientConfig
 	)
 
-	if s.AutoLogin == "yes" {
+	if s.PrivateKey != "" {
 		var hostKey ssh.PublicKey
 		key, err := ioutil.ReadFile(s.PrivateKey)
 		if err != nil {
@@ -119,17 +128,6 @@ func (s *Ssh) getHostKey() (ssh.PublicKey, error) {
 		return nil, errors.New(fmt.Sprintf("no hostkey for %s", s.Addr))
 	}
 	return hostKey, nil
-}
-
-func NewSsh(autoLogin, privateKey, user, password, addr, port string) *Ssh {
-	return &Ssh{
-		AutoLogin:  autoLogin,
-		PrivateKey: privateKey,
-		User:       user,
-		Password:   password,
-		Addr:       addr,
-		Port:       port,
-	}
 }
 
 // 去除字符串中的cutset
