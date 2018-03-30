@@ -24,7 +24,7 @@ func NewInflux(addr, username, password, dbName, tableName string) *Influx {
 	}
 }
 
-func (i *Influx) httpClient() (clnt client.Client, err error) {
+func (i *Influx) HttpClient() (clnt client.Client, err error) {
 	clnt, err = client.NewHTTPClient(client.HTTPConfig{
 		Addr:     i.Addr,
 		Username: i.Username,
@@ -36,9 +36,8 @@ func (i *Influx) httpClient() (clnt client.Client, err error) {
 	return clnt, nil
 }
 
-func (i *Influx) insert(tags map[string]string, fields map[string]interface{}) (err error) {
-
-	clnt, err := i.httpClient()
+func (i *Influx) Write(tags map[string]string, fields map[string]interface{}) (err error) {
+	clnt, err := i.HttpClient()
 	if err != nil {
 		return err
 	}
