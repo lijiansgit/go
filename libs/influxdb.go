@@ -42,6 +42,8 @@ func (i *Influx) Write(tags map[string]string, fields map[string]interface{}) (e
 		return err
 	}
 
+	defer clnt.Close()
+
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  i.DbName,
 		Precision: "us",
