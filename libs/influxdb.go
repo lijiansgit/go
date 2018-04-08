@@ -36,7 +36,11 @@ func (i *Influx) HttpClient() (clnt client.Client, err error) {
 	return clnt, nil
 }
 
-func (i *Influx) Write(tags map[string]string, fields map[string]interface{}) (err error) {
+func (i *Influx) Write(tags map[string]string, fields map[string]interface{}, t ...time.Time) (err error) {
+	var (
+		ts time.Time
+	)
+
 	clnt, err := i.HttpClient()
 	if err != nil {
 		return err
@@ -52,11 +56,17 @@ func (i *Influx) Write(tags map[string]string, fields map[string]interface{}) (e
 		return err
 	}
 
+	if len(t) == 1 {
+		ts = t[0]
+	} else {
+		ts = time.Now()
+	}
+
 	pt, err := client.NewPoint(
 		i.TableName,
 		tags,
 		fields,
-		time.Now(),
+		ts,
 	)
 	if err != nil {
 		return err
