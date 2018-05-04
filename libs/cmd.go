@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 )
 
 func Cmd(cmds string, cmdDir ...string) (res string, err error) {
@@ -16,11 +17,16 @@ func Cmd(cmds string, cmdDir ...string) (res string, err error) {
 	}
 
 	in := bytes.NewBuffer(nil)
-	command := exec.Command("sh")
+	var command *exec.Cmd
+	if runtime.GOOS == `windows` {
+		command = exec.Command("cmd")
+	} else {
+		command = exec.Command("sh")
+	}
 	command.Stdin = in
 	go func() {
 		in.WriteString(fmt.Sprintf("%s\n", cmds))
-		in.WriteString("exit\n")
+		// in.WriteString("exit\n")
 	}()
 	var stdout, stderr bytes.Buffer
 	command.Stdout = &stdout
