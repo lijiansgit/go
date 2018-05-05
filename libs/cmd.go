@@ -24,10 +24,11 @@ func Cmd(cmds string, cmdDir ...string) (res string, err error) {
 		command = exec.Command("sh")
 	}
 	command.Stdin = in
-	go func() {
-		in.WriteString(fmt.Sprintf("%s\n", cmds))
-		// in.WriteString("exit\n")
-	}()
+	// go func() {
+	// 	in.WriteString(fmt.Sprintf("%s\n", cmds))
+	// 	// in.WriteString("exit\n")
+	// }()
+	in.WriteString(fmt.Sprintf("%s\n", cmds))
 	var stdout, stderr bytes.Buffer
 	command.Stdout = &stdout
 	command.Stderr = &stderr

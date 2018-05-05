@@ -34,6 +34,10 @@ func SendRequest(url, account, apikey, params string) (response string, err erro
 	req.Header.Set("Authorization", "Basic "+auth)
 	// 发送请求
 	resp, err := client.Do(req)
+	if err != nil {
+		return response, err
+	}
+
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
