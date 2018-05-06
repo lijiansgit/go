@@ -10,26 +10,26 @@ import (
 )
 
 func Cmd(cmds string, cmdDir ...string) (res string, err error) {
+	var (
+		command               *exec.Cmd
+		stdout, stderr, stdin bytes.Buffer
+	)
+
 	if len(cmdDir) == 1 {
 		if err := os.Chdir(cmdDir[0]); err != nil {
 			return res, err
 		}
 	}
 
-	in := bytes.NewBuffer(nil)
-	var command *exec.Cmd
 	if runtime.GOOS == `windows` {
 		command = exec.Command("cmd")
 	} else {
 		command = exec.Command("sh")
 	}
-	command.Stdin = in
-	// go func() {
-	// 	in.WriteString(fmt.Sprintf("%s\n", cmds))
-	// 	// in.WriteString("exit\n")
-	// }()
-	in.WriteString(fmt.Sprintf("%s\n", cmds))
-	var stdout, stderr bytes.Buffer
+
+	// stdin = bytes.NewBuffer(nil)
+	stdin.WriteString(fmt.Sprintf("%s\n", cmds))
+	command.Stdin = &stdin
 	command.Stdout = &stdout
 	command.Stderr = &stderr
 	if err := command.Run(); err != nil {
