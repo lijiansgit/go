@@ -41,5 +41,9 @@ func Cmd(cmds string, cmdDir ...string) (res string, err error) {
 		return res, err
 	}
 
+	if stderr.String() != "" {
+		return res, errors.New(stderr.String())
+	}
+
 	return stdout.String(), nil
 }
