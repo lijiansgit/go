@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 )
 
 func Cmd(cmds string, cmdDir ...string) (res string, err error) {
@@ -42,8 +43,19 @@ func Cmd(cmds string, cmdDir ...string) (res string, err error) {
 	}
 
 	if stderr.String() != "" {
-		return res, errors.New(stderr.String())
+		if cygwinWarn(stderr.String()) {
+			return res, errors.New(stderr.String())
+		}
 	}
 
 	return stdout.String(), nil
+}
+
+// cygwinWarn 忽略cygwin报的warning信息
+func cygwinWarn(message string) bool {
+	if strings.Contains(message, "cygwin warning") {
+		return false
+	}
+
+	return true
 }
