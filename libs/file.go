@@ -29,7 +29,6 @@ func CopyDir(srcDir, destDir string) (err error) {
 			}
 
 		} else {
-			println(fileName)
 			err = CopyFile(src, fileName)
 			if err != nil {
 				return err
