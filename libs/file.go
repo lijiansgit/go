@@ -8,7 +8,7 @@ import (
 
 // CopyDir 复制文件夹及其子目录和文件
 func CopyDir(srcDir, destDir string) (err error) {
-	err = filepath.Walk(srcDir, func(srcDir string, f os.FileInfo, err error) error {
+	err = filepath.Walk(srcDir, func(src string, f os.FileInfo, err error) error {
 		if f == nil {
 			return err
 		}
@@ -20,7 +20,11 @@ func CopyDir(srcDir, destDir string) (err error) {
 				return err
 			}
 		} else {
-			// file := destDir + f.Name()
+			file := destDir + f.Name()
+			err = CopyFile(src, file)
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	})
