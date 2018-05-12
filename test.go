@@ -10,6 +10,8 @@ func main() {
 	res, err := libs.Cmd("hostname")
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
+
 	fmt.Println(res)
 }
