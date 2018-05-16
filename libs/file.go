@@ -127,6 +127,10 @@ func HttpDownFile(url, dest string) (err error) {
 
 	defer res.Body.Close()
 
+	if res.StatusCode != 200 {
+		return fmt.Errorf("http.Get() error(%s)", res.Status)
+	}
+
 	fileName := path.Base(url)
 	destFile := path.Join(dest, fileName)
 	f, err := os.Create(destFile)
