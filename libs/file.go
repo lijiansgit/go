@@ -1,4 +1,5 @@
 // 文件操作，linux下一切皆文件，目录和文件的很多操作方法类似
+// 注意 windows chmod 不兼容
 
 package libs
 
@@ -31,7 +32,8 @@ func CopyDir(srcDir, destDir string) (err error) {
 		fileName := path.Join(destDir, path.Base(srcDir), rel)
 
 		if f.IsDir() {
-			err = os.MkdirAll(fileName, f.Mode())
+			// err = os.MkdirAll(fileName, f.Mode())
+			err = os.MkdirAll(fileName, 0755)
 			if err != nil {
 				return err
 			}
@@ -55,10 +57,10 @@ func CopyFile(srcFile, destFile string) (err error) {
 		return err
 	}
 
-	fs, err := f.Stat()
-	if err != nil {
-		return err
-	}
+	// fs, err := f.Stat()
+	// if err != nil {
+	// 	return err
+	// }
 
 	defer f.Close()
 
@@ -69,10 +71,10 @@ func CopyFile(srcFile, destFile string) (err error) {
 
 	defer destf.Close()
 
-	err = destf.Chmod(fs.Mode())
-	if err != nil {
-		return err
-	}
+	// err = destf.Chmod(fs.Mode())
+	// if err != nil {
+	// 	return err
+	// }
 
 	_, err = io.Copy(destf, f)
 	if err != nil {
