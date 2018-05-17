@@ -120,8 +120,8 @@ func GetFileMode(name string) (fm os.FileMode, err error) {
 	return fm, nil
 }
 
-// HttpDownFile 下载http文件
-func HttpDownFile(url, dest string) (err error) {
+// HTTPDownFile 下载http文件
+func HTTPDownFile(url, dest string) (err error) {
 	res, err := http.Get(url)
 	if err != nil {
 		return err
@@ -228,7 +228,7 @@ func UnBzip2(compressFile, destDir string) (err error) {
 	return nil
 }
 
-// Untar 读取tar io.Reader，并写入目录
+// UnTar 读取tar io.Reader，并写入目录
 func UnTar(rd io.Reader, destDir string) (err error) {
 	tr := tar.NewReader(rd)
 	for {
