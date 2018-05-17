@@ -32,8 +32,8 @@ func CopyDir(srcDir, destDir string) (err error) {
 		fileName := path.Join(destDir, path.Base(srcDir), rel)
 
 		if f.IsDir() {
-			// err = os.MkdirAll(fileName, f.Mode())
-			err = os.MkdirAll(fileName, 0755)
+			err = os.MkdirAll(fileName, f.Mode())
+			// err = os.MkdirAll(fileName, 0755)
 			if err != nil {
 				return err
 			}
