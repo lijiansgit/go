@@ -1,2 +1,2 @@
 # go
-golang's libs
+golang's code
