@@ -17,8 +17,9 @@ type Elastic struct {
 }
 
 // NewElastic 初始化es
-func NewElastic(addrs []string) (es *Elastic, err error) {
-	options := []elastic.ClientOptionFunc{elastic.SetURL(addrs...)}
+func NewElastic(addrs []string, maxRetries int) (es *Elastic, err error) {
+	options := []elastic.ClientOptionFunc{elastic.SetURL(addrs...),
+		elastic.SetMaxRetries(maxRetries)}
 	client, err := elastic.NewClient(options...)
 	if err != nil {
 		return nil, err
