@@ -4,6 +4,7 @@
 package dnspod
 
 import (
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -17,74 +18,114 @@ import (
 type Client struct {
 	// token 完整的 API Token 是由 ID,Token 组合而成的，用英文的逗号分割
 	Token  string
-	Domain string
 	Format string
 }
 
-// NewClient 新结构体
-func NewClient(token, domain string) *Client {
-	return &Client{
+// Record 域名记录
+// 返回的json里LineID == line_id, Typ == type, 取不到对应值
+type Record struct {
+	ID      string
+	Name    string
+	Line    string
+	LineID  string
+	Typ     string
+	TTL     string
+	Value   string
+	Weight  string
+	MX      string
+	Enabled string
+	Status  string
+	Remark  string
+}
+
+// Domain 域名相关
+type Domain struct {
+	// 域名名称
+	Name string
+	Client
+	Record
+}
+
+// NewDomain 新结构体
+func NewDomain(token, name string) *Domain {
+	client := &Client{
 		Token:  token,
-		Domain: domain,
-		Format: "json",
+		Format: ResFormat,
+	}
+	return &Domain{
+		Name:   name,
+		Client: *client,
 	}
 }
 
 // SetFormat 设置数据返回格式，默认json, 支持json/xml
 // TODO
-// func (c *Client) SetFormat(format string) {
-// 	c.format = format
+// func (d * Domain) SetFormat(format string) {
+// 	d.format = format
 // }
 
-// SetDomain 设置请求的域名
-func (c *Client) SetDomain(domain string) {
-	c.Domain = domain
+// SetDomainName 设置请求的域名
+func (d *Domain) SetDomainName(name string) {
+	d.Name = name
 }
 
-// GetRecords 获取域名记录列表,返回map[recordId][name]
-func (c *Client) GetRecords() (records map[int64]string, err error) {
-	records = make(map[int64]string)
-	req := c.InitParams()
-	res, err := c.GetRecordRawRes(req)
+// SetRecordName 设置记录名
+func (d *Domain) SetRecordName(name string) {
+	d.Record.Name = name
+}
+
+// RecordList 获取域名记录列表,返回[]Record
+func (d *Domain) RecordList() (records []Record, err error) {
+	req := d.DomainParams()
+	res, err := d.GetRaw(req)
+	if err != nil {
+		return records, err
+	}
+
+	lists := gjson.Get(res, "records").String()
+	err = json.Unmarshal([]byte(lists), &records)
+	if err != nil {
+		return records, err
+	}
+
+	return records, nil
+}
+
+// Records 获取指定记录的详细信息，第二个参数为记录的线路类型
+func (d *Domain) Records(name, typ, line string) (records Record, err error) {
+	req := d.DomainParams()
+	req.Set("keyword", name)
+	res, err := d.GetRaw(req)
 	if err != nil {
 		return records, err
 	}
 
 	list := gjson.Get(res, "records").Array()
 	for _, v := range list {
-		id := v.Get("id").Int()
 		name := v.Get("name").String()
-		records[id] = name
+		lineIDs := v.Get("line_id").String()
+		println(name, lineIDs)
 	}
 
-	return records, err
+	return records, ErrRecordNotExists
 }
 
-// GetRecordId 获取域名记录的id
-func (c *Client) GetRecordId(record string) (id int64, err error) {
-	req := c.InitParams()
-	req.Set("keyword", record)
-	res, err := c.GetRecordRawRes(req)
+// RecordModify 记录修改
+func (d *Domain) RecordModify(name, typ, line string) (err error) {
+	recordID, err := d.Records(name, typ, line)
 	if err != nil {
-		return id, err
+		return err
 	}
 
-	list := gjson.Get(res, "records").Array()
-	for _, v := range list {
-		id = v.Get("id").Int()
-		name := v.Get("name").String()
-		lineId := v.Get("line_id").String()
-		if name == record && lineId == "0" {
-			return id, nil
-		}
-	}
+	_ = recordID
+	// req.Set("record_id", strconv.Itoa(int(recordID)))
 
-	return id, ErrRecordNotExists
+	return nil
 }
 
-// GetRecordRawRes 获取记录的详细原始信息
-func (c *Client) GetRecordRawRes(req url.Values) (res string, err error) {
-	res, err = c.HTTPPost(RecordListURL, req)
+// GetRaw 获取接口返回的详细原始信息
+func (d *Domain) GetRaw(req url.Values) (res string, err error) {
+	res, err = HTTPPost(RecordListURL, req)
 	if err != nil {
 		return res, err
 	}
@@ -97,8 +138,23 @@ func (c *Client) GetRecordRawRes(req url.Values) (res string, err error) {
 	return res, err
 }
 
+// DomainParams 域名相关请求参数
+func (d *Domain) DomainParams() url.Values {
+	req := d.ClientParmas()
+	req.Set("domain", d.Name)
+	return req
+}
+
+// ClientParmas client请求参数
+func (c *Client) ClientParmas() url.Values {
+	req := url.Values{}
+	req.Set("login_token", c.Token)
+	req.Set("format", c.Format)
+	return req
+}
+
 // HTTPPost post请求
-func (c *Client) HTTPPost(url string, req url.Values) (res string, err error) {
+func HTTPPost(url string, req url.Values) (res string, err error) {
 	resp, err := http.Post(url, ContentType, strings.NewReader(req.Encode()))
 	if err != nil {
 		return res, err
@@ -113,13 +169,4 @@ func (c *Client) HTTPPost(url string, req url.Values) (res string, err error) {
 
 	res = string(body)
 	return res, nil
-}
-
-// InitParams 初始化请求参数
-func (c *Client) InitParams() url.Values {
-	req := url.Values{}
-	req.Set("login_token", c.Token)
-	req.Set("domain", c.Domain)
-	req.Set("format", c.Format)
-	return req
 }
