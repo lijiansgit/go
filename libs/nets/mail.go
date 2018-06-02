@@ -1,4 +1,6 @@
-package libs
+// 加密发送邮件
+
+package nets
 
 import (
 	"crypto/tls"

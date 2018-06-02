@@ -1,6 +1,6 @@
-// 弃用，新：db/influxdb.go
+// 时序数据库InfluxDB相关操作
 
-package libs
+package db
 
 import (
 	"time"
@@ -8,7 +8,7 @@ import (
 	"github.com/influxdata/influxdb/client/v2"
 )
 
-type Influx struct {
+type InfluxDB struct {
 	Addr      string
 	Username  string
 	Password  string
@@ -16,8 +16,8 @@ type Influx struct {
 	TableName string
 }
 
-func NewInflux(addr, username, password, dbName, tableName string) *Influx {
-	return &Influx{
+func NewInfluxDB(addr, username, password, dbName, tableName string) *InfluxDB {
+	return &InfluxDB{
 		Addr:      addr,
 		Username:  username,
 		Password:  password,
@@ -26,7 +26,7 @@ func NewInflux(addr, username, password, dbName, tableName string) *Influx {
 	}
 }
 
-func (i *Influx) HttpClient() (clnt client.Client, err error) {
+func (i *InfluxDB) HttpClient() (clnt client.Client, err error) {
 	clnt, err = client.NewHTTPClient(client.HTTPConfig{
 		Addr:     i.Addr,
 		Username: i.Username,
@@ -38,7 +38,7 @@ func (i *Influx) HttpClient() (clnt client.Client, err error) {
 	return clnt, nil
 }
 
-func (i *Influx) Write(tags map[string]string, fields map[string]interface{}, t ...time.Time) (err error) {
+func (i *InfluxDB) Write(tags map[string]string, fields map[string]interface{}, t ...time.Time) (err error) {
 	var (
 		ts time.Time
 	)

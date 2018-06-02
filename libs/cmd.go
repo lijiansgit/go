@@ -1,3 +1,5 @@
+// 执行系统命令，兼容windows/linux
+
 package libs
 
 import (

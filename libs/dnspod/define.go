@@ -9,19 +9,27 @@ const (
 	ResFormat = "json"
 	// URL dnspod api地址
 	URL = "https://dnsapi.cn/"
-	// RecordList 记录列表api
-	RecordList = "Record.List"
-	// RecordModify 记录修改
-	RecordModify = "Record.Modify"
 	// RecordListURL 记录列表URL
-	RecordListURL = URL + RecordList
+	RecordListURL = URL + "Record.List"
 	// RecordModifyURL 记录修改URL
-	RecordModifyURL = URL + RecordModify
+	RecordModifyURL = URL + "Record.Modify"
+	// RecordAdd 记录添加URL
+	RecordAddURL = URL + "Record.Create"
+	// RecordDelURL 记录删除
+	RecordDelURL = URL + "Record.Remove"
+	// RecordRemarkURL 记录备注操作
+	RecordRemarkURL = URL + "Record.Remark"
+	// Record.Status 记录暂定和关闭
+	RecordStatusURL = URL + "Record.Status"
 )
 
 var (
-	// ErrRecordNotExists 记录不存在错误
-	ErrRecordNotExists = errors.New("record is not exists")
+	// ErrRecordNoExist 记录不存在
+	ErrRecordNoExist = errors.New("record no exist")
+	// ErrRecordNoUniq 记录不止一个
+	ErrRecordNoUniq = errors.New("record no uniq")
+	// ErrRecordValueSame 记录名一样
+	ErrRecordValueSame = errors.New("new and old record's value must be different")
 )
 
 // RecordLineToID 线路名称转为线路ID
