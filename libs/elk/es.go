@@ -1,4 +1,4 @@
-package elastic
+package elk
 
 import (
 	"context"

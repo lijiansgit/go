@@ -12,16 +12,18 @@ type InfluxDB struct {
 	Addr      string
 	Username  string
 	Password  string
-	DbName    string
+	DBName    string
 	TableName string
 }
 
+// 	NewInfluxDB
+// addr: http://10.10.10.10:8086
 func NewInfluxDB(addr, username, password, dbName, tableName string) *InfluxDB {
 	return &InfluxDB{
 		Addr:      addr,
 		Username:  username,
 		Password:  password,
-		DbName:    dbName,
+		DBName:    dbName,
 		TableName: tableName,
 	}
 }
@@ -51,7 +53,7 @@ func (i *InfluxDB) Write(tags map[string]string, fields map[string]interface{}, 
 	defer clnt.Close()
 
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
-		Database:  i.DbName,
+		Database:  i.DBName,
 		Precision: "us",
 	})
 	if err != nil {
