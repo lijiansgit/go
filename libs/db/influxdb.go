@@ -8,12 +8,18 @@ import (
 	"github.com/influxdata/influxdb/client/v2"
 )
 
+var (
+	// DefaultPrecision 精确度
+	DefaultPrecision = "ns"
+)
+
 type InfluxDB struct {
 	Addr      string
 	Username  string
 	Password  string
 	DBName    string
 	TableName string
+	Precision string
 }
 
 // 	NewInfluxDB
@@ -25,6 +31,7 @@ func NewInfluxDB(addr, username, password, dbName, tableName string) *InfluxDB {
 		Password:  password,
 		DBName:    dbName,
 		TableName: tableName,
+		Precision: DefaultPrecision,
 	}
 }
 
@@ -54,7 +61,7 @@ func (i *InfluxDB) Write(tags map[string]string, fields map[string]interface{}, 
 
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  i.DBName,
-		Precision: "us",
+		Precision: i.Precision,
 	})
 	if err != nil {
 		return err
@@ -66,20 +73,46 @@ func (i *InfluxDB) Write(tags map[string]string, fields map[string]interface{}, 
 		ts = time.Now()
 	}
 
-	pt, err := client.NewPoint(
-		i.TableName,
-		tags,
-		fields,
-		ts,
-	)
+	pt, err := client.NewPoint(i.TableName, tags, fields, ts)
 	if err != nil {
 		return err
 	}
-	bp.AddPoint(pt)
 
+	bp.AddPoint(pt)
 	if err := clnt.Write(bp); err != nil {
 		return err
 	}
 
+	if err := clnt.Close(); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+// TODO error
+func (i *InfluxDB) Query(cmd string) (res []client.Result, err error) {
+	clnt, err := i.HttpClient()
+	if err != nil {
+		return res, err
+	}
+
+	defer clnt.Close()
+
+	q := client.NewQuery(cmd, i.DBName, i.Precision)
+	resp, err := clnt.Query(q)
+	if err != nil {
+		return res, err
+	}
+
+	if resp.Error() != nil {
+		return res, resp.Error()
+	}
+
+	res = resp.Results
+	if err := clnt.Close(); err != nil {
+		return res, err
+	}
+
+	return res, nil
 }
