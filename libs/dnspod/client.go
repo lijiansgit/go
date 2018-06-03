@@ -96,9 +96,7 @@ func (d *Domain) RecordDel(name string) (err error) {
 		return err
 	}
 
-	if len(records) == 0 {
-		return ErrRecordNoExist
-	} else if len(records) > 1 {
+	if len(records) > 1 {
 		return ErrRecordNoUniq
 	}
 
@@ -141,6 +139,10 @@ func (d *Domain) RecordList(all bool, name string) (records []Record, err error)
 		}
 	}
 
+	if len(keywordRecords) == 0 {
+		return keywordRecords, ErrRecordNoExist
+	}
+
 	return keywordRecords, nil
 }
 
@@ -151,9 +153,7 @@ func (d *Domain) RecordModify(name, value string) (err error) {
 		return err
 	}
 
-	if len(records) == 0 {
-		return ErrRecordNoExist
-	} else if len(records) > 1 {
+	if len(records) > 1 {
 		return ErrRecordNoUniq
 	}
 
@@ -185,9 +185,7 @@ func (d *Domain) RecordRemarkSet(name, remark string) (err error) {
 		return err
 	}
 
-	if len(records) == 0 {
-		return ErrRecordNoExist
-	} else if len(records) > 1 {
+	if len(records) > 1 {
 		return ErrRecordNoUniq
 	}
 
@@ -202,16 +200,14 @@ func (d *Domain) RecordRemarkSet(name, remark string) (err error) {
 	return nil
 }
 
-// RecordStatusSet 记录暂定和开启，要操作的记录必须唯一
+// RecordStatusSet 记录暂停和开启，要操作的记录必须唯一
 func (d *Domain) RecordStatusSet(name string, enabled bool) (err error) {
 	records, err := d.RecordList(false, name)
 	if err != nil {
 		return err
 	}
 
-	if len(records) == 0 {
-		return ErrRecordNoExist
-	} else if len(records) > 1 {
+	if len(records) > 1 {
 		return ErrRecordNoUniq
 	}
 
