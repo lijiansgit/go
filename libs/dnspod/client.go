@@ -6,6 +6,7 @@ package dnspod
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -97,7 +98,7 @@ func (d *Domain) RecordDel(name string) (err error) {
 	}
 
 	if len(records) > 1 {
-		return ErrRecordNoUniq
+		return fmt.Errorf(ErrRecordNoUniq, name)
 	}
 
 	req := d.InitParams()
@@ -140,7 +141,7 @@ func (d *Domain) RecordList(all bool, name string) (records []Record, err error)
 	}
 
 	if len(keywordRecords) == 0 {
-		return keywordRecords, ErrRecordNoExist
+		return keywordRecords, fmt.Errorf(ErrRecordNoExist, name)
 	}
 
 	return keywordRecords, nil
@@ -154,12 +155,12 @@ func (d *Domain) RecordModify(name, value string) (err error) {
 	}
 
 	if len(records) > 1 {
-		return ErrRecordNoUniq
+		return fmt.Errorf(ErrRecordNoUniq, name)
 	}
 
 	record := records[0]
 	if value == record.Value {
-		return ErrRecordValueSame
+		return fmt.Errorf(ErrRecordValueSame, name)
 	}
 
 	req := d.InitParams()
@@ -186,7 +187,7 @@ func (d *Domain) RecordRemarkSet(name, remark string) (err error) {
 	}
 
 	if len(records) > 1 {
-		return ErrRecordNoUniq
+		return fmt.Errorf(ErrRecordNoUniq, name)
 	}
 
 	req := d.InitParams()
@@ -208,7 +209,7 @@ func (d *Domain) RecordStatusSet(name string, enabled bool) (err error) {
 	}
 
 	if len(records) > 1 {
-		return ErrRecordNoUniq
+		return fmt.Errorf(ErrRecordNoUniq, name)
 	}
 
 	req := d.InitParams()

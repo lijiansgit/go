@@ -1,7 +1,5 @@
 package dnspod
 
-import "errors"
-
 const (
 	// ContentType http内容类型
 	ContentType = "application/x-www-form-urlencoded"
@@ -25,11 +23,11 @@ const (
 
 var (
 	// ErrRecordNoExist 记录不存在
-	ErrRecordNoExist = errors.New("record no exist")
+	ErrRecordNoExist = "record(%s) no exist"
 	// ErrRecordNoUniq 记录不止一个
-	ErrRecordNoUniq = errors.New("record no uniq")
+	ErrRecordNoUniq = "record(%s) no uniq"
 	// ErrRecordValueSame 记录名一样
-	ErrRecordValueSame = errors.New("new and old record's value must be different")
+	ErrRecordValueSame = "modify record's value(%s) must be different"
 )
 
 // RecordLineToID 线路名称转为线路ID
