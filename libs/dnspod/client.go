@@ -160,7 +160,7 @@ func (d *Domain) RecordModify(name, value string) (err error) {
 
 	record := records[0]
 	if value == record.Value {
-		return fmt.Errorf(ErrRecordValueSame, name)
+		return fmt.Errorf(ErrRecordValueSame, name, value)
 	}
 
 	req := d.InitParams()

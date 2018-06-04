@@ -27,7 +27,7 @@ var (
 	// ErrRecordNoUniq 记录不止一个
 	ErrRecordNoUniq = "record(%s) no uniq"
 	// ErrRecordValueSame 记录名一样
-	ErrRecordValueSame = "modify record's value(%s) must be different"
+	ErrRecordValueSame = "modify record(%s) value(%s) must be different"
 )
 
 // RecordLineToID 线路名称转为线路ID
