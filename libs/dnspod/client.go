@@ -31,7 +31,7 @@ type Record struct {
 	Typ     string `json:"type"`
 	TTL     string `json:"ttl"`
 	Value   string `json:"value"`
-	Weight  string `json:"weight"`
+	Weight  int8   `json:"weight"`
 	MX      string `json:"mx"`
 	Enabled string `json:"enabled"`
 	// status系统内部标识状态, 开发者可忽略
