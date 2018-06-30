@@ -19,7 +19,7 @@ func NewClient() (*Client, error) {
 	return &Client{clt: client}, nil
 }
 
-func (c *Client) Get(key string) (res string, err error) {
+func (c *Client) Get(key string) (res []byte, err error) {
 	kvPair, _, err := c.clt.KV().Get(key, nil)
 	if err != nil {
 		return res, err
@@ -29,7 +29,7 @@ func (c *Client) Get(key string) (res string, err error) {
 		return res, fmt.Errorf(ErrKeyNoExist, key)
 	}
 
-	res = string(kvPair.Value)
+	res = kvPair.Value
 	return res, err
 }
 

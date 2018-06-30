@@ -21,13 +21,13 @@ const (
 	RecordStatusURL = URL + "Record.Status"
 )
 
-var (
-	// errRecordNoExist 记录不存在
-	errRecordNoExist = "record(%s) no exist"
-	// errRecordNoUniq 记录不止一个
-	errRecordNoUniq = "record(%s) no uniq"
-	// errRecordValueSame 记录名一样
-	errRecordValueSame = "modify record(%s) value(%s) must be different"
+const (
+	// ErrRecordNoExist 记录不存在
+	ErrRecordNoExist = "record(%s) no exist"
+	// ErrRecordNoUniq 记录不止一个
+	ErrRecordNoUniq = "record(%s) no uniq"
+	// ErrRecordValueSame 记录名一样
+	ErrRecordValueSame = "modify record(%s) value(%s) must be different"
 )
 
 // RecordLineToID 线路名称转为线路ID
