@@ -31,7 +31,7 @@ type Record struct {
 	Typ     string `json:"type"`
 	TTL     string `json:"ttl"`
 	Value   string `json:"value"`
-	Weight  string `json:"weight"`
+	Weight  int8   `json:"weight"`
 	MX      string `json:"mx"`
 	Enabled string `json:"enabled"`
 	// status系统内部标识状态, 开发者可忽略
@@ -98,7 +98,7 @@ func (d *Domain) RecordDel(name string) (err error) {
 	}
 
 	if len(records) > 1 {
-		return fmt.Errorf(ErrRecordNoUniq, name)
+		return fmt.Errorf(errRecordNoUniq, name)
 	}
 
 	req := d.InitParams()
@@ -141,7 +141,7 @@ func (d *Domain) RecordList(all bool, name string) (records []Record, err error)
 	}
 
 	if len(keywordRecords) == 0 {
-		return keywordRecords, fmt.Errorf(ErrRecordNoExist, name)
+		return keywordRecords, fmt.Errorf(errRecordNoExist, name)
 	}
 
 	return keywordRecords, nil
@@ -155,12 +155,12 @@ func (d *Domain) RecordModify(name, value string) (err error) {
 	}
 
 	if len(records) > 1 {
-		return fmt.Errorf(ErrRecordNoUniq, name)
+		return fmt.Errorf(errRecordNoUniq, name)
 	}
 
 	record := records[0]
 	if value == record.Value {
-		return fmt.Errorf(ErrRecordValueSame, name)
+		return fmt.Errorf(errRecordValueSame, name, value)
 	}
 
 	req := d.InitParams()
@@ -187,7 +187,7 @@ func (d *Domain) RecordRemarkSet(name, remark string) (err error) {
 	}
 
 	if len(records) > 1 {
-		return fmt.Errorf(ErrRecordNoUniq, name)
+		return fmt.Errorf(errRecordNoUniq, name)
 	}
 
 	req := d.InitParams()
@@ -209,7 +209,7 @@ func (d *Domain) RecordStatusSet(name string, enabled bool) (err error) {
 	}
 
 	if len(records) > 1 {
-		return fmt.Errorf(ErrRecordNoUniq, name)
+		return fmt.Errorf(errRecordNoUniq, name)
 	}
 
 	req := d.InitParams()

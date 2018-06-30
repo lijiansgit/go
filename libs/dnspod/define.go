@@ -11,23 +11,23 @@ const (
 	RecordListURL = URL + "Record.List"
 	// RecordModifyURL 记录修改URL
 	RecordModifyURL = URL + "Record.Modify"
-	// RecordAdd 记录添加URL
+	// RecordAddURL 记录添加URL
 	RecordAddURL = URL + "Record.Create"
 	// RecordDelURL 记录删除
 	RecordDelURL = URL + "Record.Remove"
 	// RecordRemarkURL 记录备注操作
 	RecordRemarkURL = URL + "Record.Remark"
-	// Record.Status 记录暂定和关闭
+	// RecordStatusURL 记录暂定和关闭
 	RecordStatusURL = URL + "Record.Status"
 )
 
 var (
-	// ErrRecordNoExist 记录不存在
-	ErrRecordNoExist = "record(%s) no exist"
-	// ErrRecordNoUniq 记录不止一个
-	ErrRecordNoUniq = "record(%s) no uniq"
-	// ErrRecordValueSame 记录名一样
-	ErrRecordValueSame = "modify record's value(%s) must be different"
+	// errRecordNoExist 记录不存在
+	errRecordNoExist = "record(%s) no exist"
+	// errRecordNoUniq 记录不止一个
+	errRecordNoUniq = "record(%s) no uniq"
+	// errRecordValueSame 记录名一样
+	errRecordValueSame = "modify record(%s) value(%s) must be different"
 )
 
 // RecordLineToID 线路名称转为线路ID
