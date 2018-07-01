@@ -23,11 +23,15 @@ const (
 
 const (
 	// ErrRecordNoExist 记录不存在
-	ErrRecordNoExist = "record(%s) no exist"
+	ErrRecordNoExist = "record(%v) no exist"
 	// ErrRecordNoUniq 记录不止一个
-	ErrRecordNoUniq = "record(%s) no uniq"
-	// ErrRecordValueSame 记录名一样
-	ErrRecordValueSame = "modify record(%s) value(%s) must be different"
+	ErrRecordNoUniq = "record(%v) no uniq"
+	// ErrRecordValueSame 记录值重复提交
+	ErrRecordValueSame = "record(%v) value already is %v"
+	// ErrRecordStatusSame 记录状态重复提交
+	ErrRecordStatusSame = "record(%v) status already is %v"
+	// ErrRecordRemarkSame 记录状态重复提交
+	ErrRecordRemarkSame = "record(%v) remark already is %v"
 )
 
 // RecordLineToID 线路名称转为线路ID

@@ -1,5 +1,8 @@
 // dnspod api 相关操作
 // 官方api文档：https://www.dnspod.cn/docs/info.html#common-parameters
+// 注意域名记录相关操作都需要先SetRecord():
+// 1. 操作的记录信息都是已知的才能确保操作的安全性
+// 2. 操作必须要获取唯一的record id, SetRecord() 才能获取到唯一的
 
 package dnspod
 
@@ -26,20 +29,19 @@ type Client struct {
 type Record struct {
 	ID      string `json:"id"`
 	Name    string `json:"name"`
-	Line    string `json:"line"`
-	LineID  string `json:"line_id"`
 	Typ     string `json:"type"`
-	TTL     string `json:"ttl"`
+	Line    string `json:"line"`
 	Value   string `json:"value"`
-	Weight  int8   `json:"weight"`
+	Weight  int    `json:"weight"`
 	MX      string `json:"mx"`
+	TTL     string `json:"ttl"`
 	Enabled string `json:"enabled"`
-	// status系统内部标识状态, 开发者可忽略
-	// Status  string `json:"status"`
-	Monitor string `json:"monitor_status"`
 	Remark  string `json:"remark"`
 	Updated string `json:"updated_on"`
-	AQB     string `json:"use_aqb"`
+	// LineID  string `json:"line_id"`
+	// Status  string `json:"status"`
+	// Monitor string `json:"monitor_status"`
+	// AQB     string `json:"use_aqb"`
 }
 
 // Domain 域名相关
@@ -71,17 +73,25 @@ func (d *Domain) SetDomainName(name string) {
 }
 
 // SetRecordName 设置记录名
-func (d *Domain) SetRecordName(name string) {
+// func (d *Domain) SetRecordName(name string) {
+// 	d.record.Name = name
+// }
+
+// SetRecord 设置要操作的记录，注意记录相关操作都需要先SetRecord()
+func (d *Domain) SetRecord(name, typ, line, value string) {
 	d.record.Name = name
+	d.record.Typ = typ
+	d.record.Line = line
+	d.record.Value = value
 }
 
 // RecordAdd 记录添加
-func (d *Domain) RecordAdd(name, typ, line, value string) (err error) {
+func (d *Domain) RecordAdd() (err error) {
 	req := d.InitParams()
-	req.Set("sub_domain", name)
-	req.Set("record_type", typ)
-	req.Set("record_line_id", RecordLineToID(line))
-	req.Set("value", value)
+	req.Set("sub_domain", d.record.Name)
+	req.Set("record_type", d.record.Typ)
+	req.Set("record_line", d.record.Line)
+	req.Set("value", d.record.Value)
 	_, err = d.client.Post(RecordAddURL, req)
 	if err != nil {
 		return err
@@ -90,19 +100,15 @@ func (d *Domain) RecordAdd(name, typ, line, value string) (err error) {
 	return nil
 }
 
-// RecordDel 记录删除，要删除的记录必须唯一
-func (d *Domain) RecordDel(name string) (err error) {
-	records, err := d.RecordList(false, name)
+// RecordDel 记录删除
+func (d *Domain) RecordDel() (err error) {
+	record, err := d.RecordQuery()
 	if err != nil {
 		return err
 	}
 
-	if len(records) > 1 {
-		return fmt.Errorf(ErrRecordNoUniq, name)
-	}
-
 	req := d.InitParams()
-	req.Set("record_id", records[0].ID)
+	req.Set("record_id", record.ID)
 	_, err = d.client.Post(RecordDelURL, req)
 	if err != nil {
 		return err
@@ -141,33 +147,50 @@ func (d *Domain) RecordList(all bool, name string) (records []Record, err error)
 	}
 
 	if len(keywordRecords) == 0 {
-		return keywordRecords, fmt.Errorf(ErrRecordNoExist, name)
+		return records, fmt.Errorf(ErrRecordNoExist, name)
 	}
 
 	return keywordRecords, nil
 }
 
-// RecordModify 记录修改, 要修改的记录必须唯一
-func (d *Domain) RecordModify(name, value string) (err error) {
-	records, err := d.RecordList(false, name)
+// RecordQuery 获取指定记录的所有信息
+func (d *Domain) RecordQuery() (record Record, err error) {
+	records, err := d.RecordList(false, d.record.Name)
+	if err != nil {
+		return record, err
+	}
+
+	for _, v := range records {
+		if v.Name == d.record.Name &&
+			v.Typ == d.record.Typ &&
+			v.Line == d.record.Line &&
+			v.Value == d.record.Value {
+			record = v
+		}
+	}
+	if record.Name == "" {
+		return record, fmt.Errorf(ErrRecordNoExist, d.record)
+	}
+
+	return record, nil
+}
+
+// RecordModify 记录值修改
+func (d *Domain) RecordValueSet(value string) (err error) {
+	record, err := d.RecordQuery()
 	if err != nil {
 		return err
 	}
 
-	if len(records) > 1 {
-		return fmt.Errorf(ErrRecordNoUniq, name)
-	}
-
-	record := records[0]
 	if value == record.Value {
-		return fmt.Errorf(ErrRecordValueSame, name, value)
+		return fmt.Errorf(ErrRecordValueSame, record, value)
 	}
 
 	req := d.InitParams()
 	req.Set("record_id", record.ID)
-	req.Set("sub_domain", name)
+	req.Set("sub_domain", record.Name)
 	req.Set("record_type", record.Typ)
-	req.Set("record_line_id", record.LineID)
+	req.Set("record_line", record.Line)
 	req.Set("value", value)
 	req.Set("mx", record.MX)
 	_, err = d.client.Post(RecordModifyURL, req)
@@ -178,20 +201,20 @@ func (d *Domain) RecordModify(name, value string) (err error) {
 	return nil
 }
 
-// RecordRemarkSet 记录备注操作，要操作的记录必须唯一
+// RecordRemarkSet 记录备注操作
 // remark == "" 删除备注
-func (d *Domain) RecordRemarkSet(name, remark string) (err error) {
-	records, err := d.RecordList(false, name)
+func (d *Domain) RecordRemarkSet(remark string) (err error) {
+	record, err := d.RecordQuery()
 	if err != nil {
 		return err
 	}
 
-	if len(records) > 1 {
-		return fmt.Errorf(ErrRecordNoUniq, name)
+	if record.Remark == remark {
+		return fmt.Errorf(ErrRecordRemarkSame, record, remark)
 	}
 
 	req := d.InitParams()
-	req.Set("record_id", records[0].ID)
+	req.Set("record_id", record.ID)
 	req.Set("remark", remark)
 	_, err = d.client.Post(RecordRemarkURL, req)
 	if err != nil {
@@ -201,19 +224,19 @@ func (d *Domain) RecordRemarkSet(name, remark string) (err error) {
 	return nil
 }
 
-// RecordStatusSet 记录暂停和开启，要操作的记录必须唯一
-func (d *Domain) RecordStatusSet(name string, enabled bool) (err error) {
-	records, err := d.RecordList(false, name)
+// RecordStatusSet 指定某条记录状态
+func (d *Domain) RecordStatusSet(enabled bool) (err error) {
+	record, err := d.RecordQuery()
 	if err != nil {
 		return err
 	}
 
-	if len(records) > 1 {
-		return fmt.Errorf(ErrRecordNoUniq, name)
+	if (enabled && record.Enabled == "1") || (!enabled && record.Enabled == "0") {
+		return fmt.Errorf(ErrRecordStatusSame, record, enabled)
 	}
 
 	req := d.InitParams()
-	req.Set("record_id", records[0].ID)
+	req.Set("record_id", record.ID)
 	if enabled {
 		req.Set("status", "enable")
 	} else {
