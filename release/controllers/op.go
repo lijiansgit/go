@@ -66,19 +66,6 @@ func NewRelease() *Release {
 	exclude := []string{
 		"--exclude .git/",
 		"--exclude /upload",
-		"--exclude application/logs",
-		"--exclude JsonRpc/*.pid",
-		"--exclude kw/",
-		"--exclude application/config/production/gift.php",
-		"--exclude application/config/production/gift_all.php",
-		"--exclude application/config/production/gift_category.php",
-		"--exclude JsonRpc/*.log",
-		"--exclude /*.log",
-		"--exclude /*.txt",
-		"--exclude /*.json",
-		"--exclude /*.md",
-		"--exclude /.gitignore",
-		"--exclude .idea/",
 	}
 	syncExclude := strings.Join(exclude, " ")
 	var syncCmdFormat string
