@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="refresh" content="20">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+    <link rel="stylesheet" href="http://img.static.com/release/css/pintuer.css">
+    <link rel="stylesheet" href="http://img.static.com/release/css/admin.css">
+</head>
+<body>
+<div class="panel admin-panel">
+    <div class="panel-head"><strong class="icon-reorder"> 工单列表</strong></div>
+    <form method="post" class="form-x" action="/release/order/search/">
+    <div class="padding border-bottom">
+        <ul class="search" style="padding-left:10px;">
+            <li>搜索：</li>
+            <li>
+                <select name="env" class="input" style="width:200px; line-height:17px;">
+                    {{ if eq .env "pre" }}
+                        <option value="pre">发布环境</option>
+                    {{ else }}
+                        <option value="pro">生产环境</option>
+                    {{ end }}
+                </select>
+            </li>
+            <li>
+                <select name="field" class="input" style="width:200px; line-height:17px;">
+                    <option value="title">工单主题</option>
+                    <option value="fileLog">工单日志</option>
+                </select>
+            </li>
+            <li>
+                <input type="text" placeholder="请输入搜索关键字" name="keywords" class="input" style="width:250px; line-height:17px;display:inline-block" />
+                <button class="button border-main icon-search" type="submit" > 搜索</button></li>
+        </ul>
+    </div>
+    </form>
+
+    <table class="table table-hover text-center">
+      <tr>
+        <th>序号</th>
+        <th>类型</th>
+        <th>工单主题</th>
+        <th>发布时间</th>
+        <th>操作者</th>
+        <th>状态</th>
+        <th>操作</th>
+      </tr>
+      {{ range $k, $v := .orders }}
+        <tr>
+            <td>{{ $v.Id }}</td>
+            <td>{{ $v.OpType }}</td>
+            <td>{{ n2br $v.Title | str2html }}</td>
+            <td>{{ timeToStr $v.Timestamp }}</td>
+            <td>{{ $v.OpName }}</td>
+            {{ if eq $v.Status true }}
+
+                {{ if eq $v.OpType "发布" }}
+            <td><font color="#00CC99">发布成功</td>
+            <td>
+                {{ if eq $v.Env "pre" }}
+                <div class="button-group"> <a class="button border-red" href="/release/order/back/{{ $v.Timestamp }}/"><span class="icon-magic"></span> 回滚</a></div>
+                {{ end }}
+                <div class="button-group"> <a class="button border-green" href="/release/order/log/{{ $v.Timestamp }}/">&nbsp;日志&nbsp;</a></div>
+            </td>
+                {{ else if eq $v.OpType "回滚" }}
+            <td><font color="#00CC99">回滚成功</td>
+            <td>
+                <div class="button-group"> <a class="button border-green" href="/release/order/log/{{ $v.Timestamp }}/">&nbsp;日志&nbsp;</a></div>
+            </td>
+                {{ end }}
+
+            {{ else }}
+
+                {{ if eq $v.OpType "发布" }}
+            <td><font color="#FF0000">正在发布中.....</td>
+            <td><div class="button-group"> <a class="button" href="#">等待</a></div></td>
+                {{ else if eq $v.OpType "回滚" }}
+            <td><font color="#FF0000">正在回滚.....</td>
+            <td><div class="button-group"> <a class="button" href="#">等待</a></div></td>
+                {{ end }}
+
+            {{ end }}
+        </tr>
+      {{ end }}
+        <tr>
+        <td colspan="8">
+            <div class="pagelist">
+                {{ if le .Page.NowPage 1 }}
+                    <a href="#">上一页</a>
+                {{ else }}
+                    <a href="/release/order/list/{{ .env }}/{{ .Page.UpPage }}">上一页</a>
+                {{ end }}
+                <span class="current">{{ .Page.NowPage }}</span>
+                {{ if le .Page.NextPage .Page.TotalPage }}
+                    <a href="/release/order/list/{{ .env }}/{{ .Page.NextPage }}">{{ .Page.NextPage }}</a>
+                {{ else }}
+                    <a href="#">{{ .Page.NextPage }}</a>
+                {{ end }}
+                {{ if le .Page.Next2Page .Page.TotalPage }}
+                <a href="/release/order/list/{{ .env }}/{{ .Page.Next2Page }}">{{ .Page.Next2Page }}</a>
+                {{ else }}
+                <a href="#">{{ .Page.Next2Page }}</a>
+                {{ end }}
+                {{ if ge .Page.NowPage .Page.TotalPage }}
+                    <a href="#">下一页</a>
+                {{ else }}
+                    <a href="/release/order/list/{{ .env }}/{{ .Page.NextPage }}">下一页</a>
+                {{ end }}
+            </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>

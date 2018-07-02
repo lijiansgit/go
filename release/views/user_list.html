@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="renderer" content="webkit">
+    <title></title>
+    <link rel="stylesheet" href="http://img.static.com/release/css/pintuer.css">
+    <link rel="stylesheet" href="http://img.static.com/release/css/admin.css">
+</head>
+<body>
+<div class="panel admin-panel">
+<div class="panel-head"><strong class="icon-user"> 用户列表</strong></div>
+<div class="padding border-bottom">
+    <a class="button border-green" href="/user/add">添加</a>
+</div>
+<table class="table table-hover text-center">
+    <tr>
+        <th>序号</th>
+        <th>用户名</th>
+        <th>密码</th>
+        <th>操作</th>
+    </tr>
+    {{ range $k, $v := .users }}
+    <tr>
+        <td>{{ $v.Id }}</td>
+        <td>{{ $v.Username }}</td>
+        <td>{{ $v.Password }}</td>
+        <td>
+            <div class="button-group"> <a class="button border-red" href="/user/del/{{ $v.Username }}" onclick="return window.confirm('确定要删除吗？')"><span class="icon-trash-o"></span> 删除</a></div>
+        </td>
+    </tr>
+    {{ end }}
+    <tr>
+        <td colspan="8">
+            <div class="pagelist">
+                <!--{% if page == 0 %}-->
+                <a href="#">上一页</a>
+                <!--{% else %}-->
+                <a href="#">上一页</a>
+                <!--{% endif %}-->
+                <span class="current">1</span>
+                <a href="#">2</a>
+                <a href="#">3</a>
+                <a href="#">下一页</a>
+            </div>
+        </td>
+    </tr>
+</table>
+</div>
+</body>
+</html>
