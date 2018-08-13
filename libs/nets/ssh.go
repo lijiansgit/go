@@ -16,28 +16,48 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-type Ssh struct {
+// SSH struct
+type SSH struct {
 	PrivateKey string
 	User       string
 	Password   string
 	Addr       string
 	Port       string
+	Timeout    time.Duration
 }
 
-// NewSsh 创建新的ssh
-// 优先使用privateKey免密码登陆，如果为空，则使用密码登陆
-// TODO ssh.Dial 和 cmd 分开
-func NewSsh(privateKey, user, password, addr, port string) *Ssh {
-	return &Ssh{
-		PrivateKey: privateKey,
-		User:       user,
-		Password:   password,
-		Addr:       addr,
-		Port:       port,
+// NewSSH 创建新的ssh
+func NewSSH() *SSH {
+	return &SSH{
+		Timeout: 10 * time.Minute,
 	}
 }
 
-func (s *Ssh) Cmd(cmd string) (res string, err error) {
+// SetPrivateKey 设置为密钥ssh,优先使用
+func (s *SSH) SetPrivateKey(key, user string) {
+	s.PrivateKey = key
+	s.User = user
+}
+
+// SetUserPass 设置为账号密码登录方式
+func (s *SSH) SetUserPass(user, password string) {
+	s.User = user
+	s.Password = password
+}
+
+// SetTimeout 设置ssh超时时间，默认为10分钟
+func (s *SSH) SetTimeout(t time.Duration) {
+	s.Timeout = t
+}
+
+// SetHostPort 设置地址和端口，用于多个ssh
+func (s *SSH) SetHostPort(addr, port string) {
+	s.Addr = addr
+	s.Port = port
+}
+
+// Cmd 执行命令
+func (s *SSH) Cmd(cmd string) (res string, err error) {
 	var (
 		config *ssh.ClientConfig
 	)
@@ -65,7 +85,7 @@ func (s *Ssh) Cmd(cmd string) (res string, err error) {
 				ssh.PublicKeys(signer),
 			},
 			HostKeyCallback: ssh.FixedHostKey(hostKey),
-			Timeout:         10 * time.Minute,
+			Timeout:         s.Timeout,
 		}
 	} else {
 		passWord := []ssh.AuthMethod{ssh.Password(s.Password)}
@@ -73,7 +93,7 @@ func (s *Ssh) Cmd(cmd string) (res string, err error) {
 			User:            s.User,
 			Auth:            passWord,
 			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-			Timeout:         10 * time.Minute,
+			Timeout:         s.Timeout,
 		}
 	}
 
@@ -104,7 +124,7 @@ func (s *Ssh) Cmd(cmd string) (res string, err error) {
 	return res, nil
 }
 
-func (s *Ssh) getHostKey() (ssh.PublicKey, error) {
+func (s *SSH) getHostKey() (ssh.PublicKey, error) {
 	file, err := os.Open(filepath.Join(os.Getenv("HOME"), ".ssh", "known_hosts"))
 	// file, err := os.Open("/root/.ssh/known_hosts")
 	if err != nil {
@@ -123,19 +143,19 @@ func (s *Ssh) getHostKey() (ssh.PublicKey, error) {
 			var err error
 			hostKey, _, _, _, err = ssh.ParseAuthorizedKey(scanner.Bytes())
 			if err != nil {
-				return nil, errors.New(fmt.Sprintf("error parsing %q: %v", fields[2], err))
+				return nil, fmt.Errorf("error parsing %q: %v", fields[2], err)
 			}
 			break
 		}
 	}
 
 	if hostKey == nil {
-		return nil, errors.New(fmt.Sprintf("no hostkey for %s", s.Addr))
+		return nil, fmt.Errorf("no hostkey for %s", s.Addr)
 	}
 	return hostKey, nil
 }
 
-// 去除字符串中的cutset
+// StringTrim 去除字符串中的cutset
 func StringTrim(str, cutset string) (res string) {
 	for _, v := range cutset {
 		str = strings.Replace(str, string(v), "", -1)
