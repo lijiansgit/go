@@ -36,4 +36,7 @@ gjson_echo -f test.json -k msg.love
 gjson_echo -f test.json -k sports.0
 ```
 
-## More usage please see github.com/tidwall/gjson
+## TODO
+* ini,yaml
+
+## json more usage please see github.com/tidwall/gjson
