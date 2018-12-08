@@ -1,5 +1,3 @@
 # go
-golang libs code
+golang code
 
-# install
-go get -u -v github.com/lijiansgit/go/libs
