@@ -1,0 +1,11 @@
+{
+  "first"   : "cory",
+  "last"    : "parker",
+  "from"    : "united states",
+  "age"     : 31,
+  "sports"  : [ "windsurfing", "baseball", "extreeeeme kayaking" ],
+  "msg"    : {
+    "love": "book",
+    "english_level": 8
+  }
+}
