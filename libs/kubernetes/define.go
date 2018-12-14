@@ -2,5 +2,5 @@ package kubernetes
 
 const (
 	HTTPS = "https://"
-	APIPATH = "/api/v1"
+	//APIPATH = "/api/v1"
 )

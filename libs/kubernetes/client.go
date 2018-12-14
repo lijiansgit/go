@@ -13,7 +13,7 @@ import (
 )
 
 type Client struct {
-	url string
+	addr string
 	httpClient *http.Client
 }
 
@@ -39,13 +39,13 @@ func NewClient(addr, caFile, certFile, keyFile string) (c *Client, err error) {
 		},
 	}
 
-	c.url = path.Join(addr, APIPATH)
+	c.addr = addr
 	c.httpClient = &http.Client{Transport: tr}
 	return c, nil
 }
 
-func (c *Client) Get(key string) (res string, err error) {
-	url := path.Join(c.url, key)
+func (c *Client) Get(paths string) (res string, err error) {
+	url := path.Join(c.addr, paths)
 	resp, err := c.httpClient.Get(HTTPS + url)
 	if err != nil {
 		return res, err
