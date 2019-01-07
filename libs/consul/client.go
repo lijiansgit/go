@@ -2,12 +2,13 @@ package consul
 
 import (
 	"fmt"
-
 	"github.com/hashicorp/consul/api"
+	"path"
 )
 
 type Client struct {
 	clt *api.Client
+	basePath string
 }
 
 func NewClient() (*Client, error) {
@@ -19,8 +20,13 @@ func NewClient() (*Client, error) {
 	return &Client{clt: client}, nil
 }
 
+func (c *Client) SetBasePath(path string) {
+	c.basePath = path
+}
+
 func (c *Client) Get(key string) (res []byte, err error) {
-	kvPair, _, err := c.clt.KV().Get(key, nil)
+	keyPath := path.Join(c.basePath, key)
+	kvPair, _, err := c.clt.KV().Get(keyPath, nil)
 	if err != nil {
 		return res, err
 	}
@@ -34,8 +40,9 @@ func (c *Client) Get(key string) (res []byte, err error) {
 }
 
 func (c *Client) Put(key, value string) (err error) {
+	keyPath := path.Join(c.basePath, key)
 	pair := &api.KVPair{
-		Key:   key,
+		Key:   keyPath,
 		Value: []byte(value),
 	}
 	_, err = c.clt.KV().Put(pair, nil)
